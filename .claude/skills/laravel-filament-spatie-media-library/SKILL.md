@@ -39,7 +39,7 @@ Do NOT introduce a parallel media architecture if the project already has a stro
 
 Read the detailed reference when needed:
 
-- [`docs/spatie-media-library-standard.md`](/Users/boranbar/claude-codex-skills/docs/spatie-media-library-standard.md)
+- `../../../docs/spatie-media-library-standard.md`
 
 ## Core Rules
 
