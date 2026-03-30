@@ -1,79 +1,90 @@
 ---
 name: filament-form-layout
-description: Enforce consistent FilamentPHP form layout standards for content, configuration, landing, and simple forms. Use when creating or refactoring Filament Resources or Page forms to ensure UI consistency, proper field grouping, and correct use of Grid, Section, and sidebar patterns.
+description: Enforce consistent FilamentPHP form layout standards for content, configuration, landing, and simple forms. Use when creating, refactoring, or reviewing Filament Resource or Page forms to ensure UI consistency, correct field grouping, and proper use of Grid, Section, and sidebar patterns.
 ---
 
 # Filament Form Layout Skill
 
-This skill defines a strict layout and structural standard for building FilamentPHP forms.
-
-It MUST be applied when:
-
-- Creating a new Filament Resource form
-- Refactoring an existing form
-- Standardizing inconsistent UI/UX across resources
+Apply this skill to FilamentPHP forms that need consistent structure, predictable grouping, and stable layout decisions.
 
 Target paths:
 
-- app/Filament/Resources/**/Schemas/*Form.php
+- `app/Filament/Resources/**/Schemas/*Form.php`
 - Filament Page form schemas
 
----
+## When to Activate
 
-# Core Principle
+Activate this skill when:
 
-Before building or modifying any form, you MUST classify the form type.
+- creating a new Filament Resource form
+- refactoring an existing form
+- reviewing form layout consistency
+- standardizing layout patterns across resources
+
+## Before Implementing
+
+Inspect the project for:
+
+- existing layout patterns
+- existing form conventions
+- existing `Grid` and `Section` usage
+- consistency across related resources
+
+Do NOT introduce a conflicting layout system if the project already has a stronger established convention.
+
+## Core Principle
+
+Classify the form type before writing code.
 
 ## Required Decision Step
 
-Determine which of the following types the form belongs to:
+Decide whether the form is:
 
-1. Content-driven form
-2. Configuration / metadata form
-3. Landing / complex content form
-4. Simple form
+1. a content-driven form
+2. a configuration or metadata form
+3. a landing or complex content form
+4. a simple form
 
 Do NOT start coding before making this classification.
 
----
+## 1. Content-Driven Form Standard
 
-# 1. Content-Driven Form Standard
+Apply this standard to:
 
-## Applies to
+- blog forms
+- page forms
+- article forms
+- knowledge base or documentation forms
+- any content form with SEO and publishing logic
 
-- Blog
-- Page
-- Articles
-- Knowledge base / documentation
-- Any content with SEO + publishing logic
+### Layout Rules
 
-## Layout Rules
+Use a 3-column layout with a sidebar.
 
-Use a 3-column layout with sidebar:
+Place the following in the LEFT main content area:
 
-LEFT (main content area):
 - title
 - slug
-- body/content
+- body or content
 - images
 
-RIGHT (sidebar):
+Place the following in the RIGHT sidebar:
+
 - status
-- published_at
-- author/user
+- `published_at`
+- author or user
 - categories
 - tags
-- toggles (visibility, editor mode, etc.)
+- toggles such as visibility or editor mode
 
-SEO:
-- must NOT be primary content
-- place AFTER main content OR in collapsible section
+Treat SEO as secondary content:
 
-## Required Structure
+- do NOT place it before primary content
+- place it after main content or inside a collapsible section
 
-Use Grid + Section layout.
+### Required Structure
 
-Example:
+Use `Grid` and `Section`.
 
 ```php
 $schema
@@ -112,43 +123,39 @@ $schema
     ]);
 ```
 
-## Strict Rules
+### Strict Rules
 
-- NEVER mix status/relations into main content
-- SEO must be secondary (collapsed if possible)
-- Sidebar is REQUIRED unless form is extremely small
-- Main content must always be visually dominant
+- Do NOT mix status or relations into the main content area.
+- Keep SEO secondary and collapsed when possible.
+- Use a sidebar unless the form is genuinely too small to justify one.
+- Keep the main content area visually dominant.
 
----
+## 2. Configuration or Metadata Form Standard
 
-# 2. Configuration / Metadata Form Standard
+Apply this standard to:
 
-## Applies to
+- category forms
+- tag forms
+- package forms
+- settings forms
+- menus, links, and other small data structures
 
-- Category
-- Tag
-- Package
-- Settings
-- Menus, links, small data structures
+### Layout Decision
 
-## Layout Decision
+Decide whether the form requires a sidebar based on:
 
-You MUST decide:
+- whether toggle fields exist, such as `is_active` or `featured`
+- whether ordering fields exist, such as `order`
+- whether multiple relations exist
 
-### Use sidebar IF:
+Do NOT use a sidebar when:
 
-- toggle fields exist (is_active, featured, etc.)
-- ordering exists (order)
-- multiple relations exist
+- the form is small, roughly 3 to 6 fields
+- a linear input flow is clearer
 
-### Do NOT use sidebar IF:
+### Structure Options
 
-- form is small (3–6 fields)
-- linear input flow is clearer
-
-## Structure Options
-
-### Small form
+Use a single section for small forms:
 
 ```php
 Section::make('General')
@@ -157,30 +164,24 @@ Section::make('General')
     ]);
 ```
 
-### Medium form
+Use multiple stacked sections for medium forms.
 
-Use multiple Sections stacked vertically.
+Add a sidebar only when the form complexity clearly justifies it. Do NOT force a sidebar.
 
-### With sidebar
+## 3. Landing or Complex Content Form Standard
 
-Only when justified. Do NOT force it.
+Apply this standard to:
 
----
+- slider forms
+- landing page forms
+- campaign page forms
+- pricing or marketing block forms
 
-# 3. Landing / Complex Content Form Standard
+### Layout Rules
 
-## Applies to
+Use `Grid` plus sidebar. Do NOT use tabs for a single-screen workflow.
 
-- Sliders
-- Landing pages
-- Campaign pages
-- Pricing or marketing blocks
-
-## Layout Rules
-
-Use Grid + sidebar (NOT tabs).
-
-LEFT:
+Place the following in the LEFT content area:
 
 - image
 - title
@@ -189,44 +190,35 @@ LEFT:
 - CTA
 - features
 
-RIGHT:
+Place the following in the RIGHT sidebar:
 
 - order
 - animation settings
 - visibility toggles
 
-## Important Rule
+### Collapsible Usage
 
-If the form can be managed in a single screen:
-
-- DO NOT use Tabs
-- Use Sections with hierarchy
-
-## Collapsible Usage
-
-Use for:
+Use collapsible sections for:
 
 - rarely edited fields
 - secondary features
 - optional configurations
 
----
+If the form can be managed on one screen, use sections with hierarchy instead of tabs.
 
-# 4. Simple Form Standard
+## 4. Simple Form Standard
 
-## Applies to
+Apply this standard to:
 
 - small CRUD forms
 - single-purpose forms
 
-## Rules
+### Rules
 
-- single Section
-- no Grid unless necessary
-- no sidebar
-- no collapsible unless absolutely needed
-
-Example:
+- use a single `Section`
+- do NOT use `Grid` unless it is necessary
+- do NOT use a sidebar
+- do NOT use collapsible sections unless absolutely needed
 
 ```php
 Section::make('General')
@@ -237,142 +229,122 @@ Section::make('General')
     ]);
 ```
 
-## Strict Rule
+Do NOT over-engineer simple forms.
 
-DO NOT over-engineer simple forms.
+## Component Usage Rules
 
----
+### Schema Convention
 
-# Component Usage Rules
-
-## Schema Convention (MANDATORY)
-
-Always use:
+Use:
 
 ```php
 $schema->columns(...)->components([...]);
 ```
 
-Do NOT switch to `->schema([...])` unless the entire project uses it.
+Do NOT switch to `->schema([...])` unless the entire project already uses that style.
 
-Consistency is more important than framework examples.
+Prioritize consistency over framework example parity.
 
----
+### Grid Usage
 
-## Grid Usage
-
-Grid is ONLY for layout separation:
+Use `Grid` only for layout separation:
 
 - main content vs sidebar
 - responsive columns
 
-DO NOT use Grid for styling only.
+Do NOT use `Grid` for styling only.
 
----
+### Section Usage
 
-## Section Usage
-
-Use Section when:
+Use `Section` only when:
 
 - logical grouping exists
 - UI clarity improves
-- title adds meaning
+- the section title adds meaning
 
-Avoid meaningless Sections.
+Avoid meaningless sections.
 
----
+### Collapsible Usage
 
-## Collapsible Usage
-
-Allowed for:
+Use collapsible sections for:
 
 - SEO
 - advanced settings
 - secondary media
 
-Rules:
+Never collapse critical fields. Collapse SEO by default when possible.
 
-- critical fields must NEVER be collapsed
-- SEO SHOULD be collapsed by default
-
----
-
-## File Upload Components
+### File Upload Components
 
 Default to:
 
-- FileUpload
-- RichEditor attachments
+- `FileUpload`
+- `RichEditor` attachments
 
-Do NOT introduce new upload systems unless already used in project.
+Do NOT introduce a new upload system unless the project already uses it.
 
----
+## Layout Decision Matrix
 
-# Layout Decision Matrix
+| Form Type | Layout |
+| --- | --- |
+| Content + SEO | Grid + sidebar |
+| Medium content | 2-column or sidebar |
+| Simple form | Section only |
+| Landing form | Grid + sidebar |
+| Config form | depends on complexity |
 
-| Form Type      | Layout                |
-| -------------- | --------------------- |
-| Content + SEO  | Grid + sidebar        |
-| Medium content | 2-column OR sidebar   |
-| Simple form    | Section only          |
-| Landing form   | Grid + sidebar        |
-| Config form    | depends on complexity |
+## Mandatory Design Rules
 
----
+- Do NOT make small forms complex.
+- Do NOT mix content and metadata.
+- Do NOT prioritize SEO visually.
+- Always isolate status, order, and relations.
+- Maintain consistency across related resources.
+- Follow existing naming and field patterns.
 
-# Mandatory Design Rules
+## Anti-Patterns
 
-- Do NOT make small forms complex
-- Do NOT mix content and metadata
-- Do NOT prioritize SEO visually
-- Always isolate status, order, relations
-- Maintain consistency across all resources
-- Follow existing naming and field patterns
+Do NOT:
 
----
+- mix status fields into content sections
+- use a sidebar for tiny forms
+- use tabs for simple flows
+- collapse important fields
+- introduce inconsistent schema syntax
+- invent a new layout pattern per resource
 
-# Implementation Checklist
+## Enforcement Rule
 
-Before finishing a form:
+If the existing implementation does NOT follow this standard, refactor it unless the project already has a stronger established convention.
 
-- Is the form type correctly classified?
-- Is main content clearly dominant?
-- Are status/order/relations separated?
-- Is SEO secondary?
-- Is layout consistent with other resources?
-- Is this over-engineered?
+Do NOT preserve incorrect layout patterns only because they already exist.
 
-If any answer is incorrect, refactor.
+## Agent Output Requirements
 
----
+The agent MUST:
 
-# Anti-Patterns (DO NOT DO)
+- classify the form type before writing code
+- choose one layout pattern intentionally
+- keep content, metadata, and SEO in separate regions
+- preserve project consistency
+- avoid over-engineering
+- produce a clean, readable schema
 
-- mixing status fields into content sections
-- using sidebar for tiny forms
-- using tabs for simple flows
-- collapsing important fields
-- inconsistent schema syntax
-- introducing new layout patterns per resource
+## Final Check
 
----
+Before finishing, confirm:
 
-# Expected Output
+- the form type is correctly classified
+- the main content is clearly dominant
+- status, order, and relations are separated
+- SEO is secondary
+- the layout matches adjacent resources
+- the result is not over-engineered
 
-When applying this skill, the agent must:
+If any item fails, refactor.
 
-1. Analyze the resource type
-2. Choose correct layout pattern
-3. Apply proper Grid/Section structure
-4. Place fields in correct regions
-5. Keep consistency with the project
-6. Avoid over-engineering
-7. Produce clean, readable schema
+## Final Rule
 
----
-
-# Final Rule
-
-Consistency over creativity.
+Prefer consistency over creativity.
 
 Follow the system. Do not invent new layouts.
