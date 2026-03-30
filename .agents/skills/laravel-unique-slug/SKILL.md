@@ -5,9 +5,9 @@ description: Implement reusable, production-safe unique slug generation in Larav
 
 # Laravel Unique Slug
 
-Implement a reusable unique slug system for Laravel applications.
+Apply this skill when a Laravel project needs stable, reusable, human-readable, unique slugs for content-oriented Eloquent models.
 
-Use this skill for content-oriented Eloquent models such as:
+Use this skill for models such as:
 
 - Post
 - Article
@@ -17,66 +17,60 @@ Use this skill for content-oriented Eloquent models such as:
 - Category
 - DocumentationPage
 - FAQArticle
-- Similar models that need human-readable unique URLs
+- similar public-facing or content-oriented models
+
+## When to Activate
+
+Activate this skill when:
+
+- creating slug logic for a new model
+- refactoring duplicated slug logic into a shared implementation
+- reviewing slug behavior for correctness or SEO safety
+- adding route model binding by slug
+- standardizing slug generation across multiple models
+
+## Before Implementing
+
+Inspect the project for:
+
+- existing slug columns
+- existing slug generation logic
+- existing packages such as Spatie Sluggable or similar tools
+- existing database unique indexes or constraints
+- existing route model binding behavior
+- soft delete usage
+- tenant, site, locale, parent, or category scoping requirements
+- admin forms or APIs that already expose an editable slug field
+
+Do not introduce a conflicting slug system if the project already has a stronger established convention or an existing slug package.
 
 ## Goal
 
 Build a reusable slugging system that:
 
-1. Generates a URL-friendly slug from a source attribute such as `title` or `name`
-2. Ensures uniqueness by appending numeric suffixes like `-1`, `-2`, `-3`
-3. Works correctly during both create and update operations
-4. Excludes the current model during updates
-5. Optionally considers soft-deleted rows when checking uniqueness
-6. Avoids duplicated slug logic across models
-7. Is production-safe when combined with a database unique index
+1. generates a URL-friendly slug from a source attribute such as `title` or `name`
+2. ensures uniqueness by appending numeric suffixes such as `-1`, `-2`, `-3`
+3. works correctly during both create and update operations
+4. excludes the current model during updates
+5. handles soft-deleted rows intentionally
+6. avoids duplicated slug logic across models
+7. remains production-safe under concurrent writes when combined with database constraints
 
-## Reference behavior
+## Architecture Requirements
 
-Follow this slugging behavior:
-
-- Base slug is produced with Laravel's `Str::slug()`
-- First matching record uses the plain slug:
-  - `my-first-post`
-- Later matches use incremented suffixes:
-  - `my-first-post-1`
-  - `my-first-post-2`
-  - `my-first-post-3`
-
-When checking existing records, treat these as conflicts:
-
-- exact match: `base-slug`
-- suffixed variants: `base-slug-1`, `base-slug-2`, and so on
-
-Only numeric suffixes count as slug sequence members.
-
-Examples that count toward the sequence:
-
-- `my-post`
-- `my-post-1`
-- `my-post-25`
-
-Examples that do not count as numeric suffixes:
-
-- `my-post-old`
-- `my-post-copy`
-- `my-post-final`
-
-## Architecture requirements
-
-Prefer a shared reusable implementation, not per-model duplication.
+Prefer a shared reusable implementation. Do not duplicate slug logic per model.
 
 Use one of these approaches:
 
 - preferred: `App\Models\Concerns\HasUniqueSlug`
-- acceptable alternative: a trait plus a small support class such as `App\Support\SlugGenerator`
+- acceptable: a trait plus a support class such as `App\Support\SlugGenerator`
 
 Default recommendation:
 
-- the trait contains the Eloquent integration and conventions
-- an optional support class contains pure slug calculation logic
+- keep Eloquent integration and conventions in the trait
+- keep pure slug calculation logic in an optional support class
 
-## Default conventions
+## Default Conventions
 
 Unless the existing codebase already has a stronger convention, use these defaults:
 
@@ -86,167 +80,182 @@ Unless the existing codebase already has a stronger convention, use these defaul
 - auto-generate on create: yes
 - auto-regenerate on update: no by default
 - allow per-model override: yes
-- consider soft-deleted rows: yes when the model uses `SoftDeletes`
+- include soft-deleted rows in uniqueness checks when the model uses `SoftDeletes`
 
-## Model-level configurability
+## Model-Level Configurability
 
 Allow each model to customize:
 
-- source field, such as `title` or `name`
-- slug column name if different from `slug`
-- whether slug is regenerated when the source field changes
+- the source field, such as `title` or `name`
+- the slug column name if it differs from `slug`
+- whether slug regeneration is allowed on update
 - whether trashed rows are included in uniqueness checks
-- whether manually provided slugs should be preserved
+- whether manually provided slugs are preserved
+- whether uniqueness is global or scoped
 
 Use simple model properties or protected methods so each model can override behavior cleanly.
 
-Example flexibility:
+## Reference Behavior
 
-- `Post` may use `title`
-- `Category` may use `name`
-- `KnowledgeBaseArticle` may regenerate slug on title change
-- `Page` may preserve manually edited slugs forever
+Generate slugs with Laravel's `Str::slug()`.
 
-## Query rules
+Use this sequence behavior:
+
+- first matching record uses the plain slug: `my-first-post`
+- later matches use incremented suffixes:
+  - `my-first-post-1`
+  - `my-first-post-2`
+  - `my-first-post-3`
+
+Treat these as conflicts:
+
+- exact match: `base-slug`
+- suffixed variants: `base-slug-1`, `base-slug-2`, and so on
+
+Only numeric suffixes count as sequence members.
+
+Count these:
+
+- `my-post`
+- `my-post-1`
+- `my-post-25`
+
+Ignore these:
+
+- `my-post-old`
+- `my-post-copy`
+- `my-post-final`
+
+## Query Rules
 
 When generating a unique slug:
 
-1. Build the base slug from the source value using `Str::slug()`
-2. If the result is empty, use a fallback such as `item`
+1. Build the base slug from the source value with `Str::slug()`.
+2. If the slug is empty, use a fallback such as `item`.
 3. Query existing rows where:
-   - slug equals the base slug
-   - or slug matches `base-slug-%`
-4. If updating an existing row, exclude the current row by primary key
-5. If the model uses soft deletes and the project expects slug reservation, include trashed rows in the check
-6. Parse only numeric suffixes using a strict regex
-7. Determine the maximum numeric suffix
+   - the slug equals the base slug
+   - or the slug matches `base-slug-%`
+4. Exclude the current model by primary key during updates.
+5. Include trashed rows when the model uses `SoftDeletes` and slug reservation is enabled.
+6. Parse suffixes with a strict numeric regex.
+7. Determine the maximum numeric suffix.
 8. Return:
-   - the base slug if there are no matching rows
+   - the base slug when there are no conflicts
    - otherwise the base slug plus the next numeric suffix
 
-Use strict matching logic similar to:
+Use strict matching logic:
 
 - exact slug => suffix `0`
 - `base-slug-7` => suffix `7`
 - anything else => ignore
 
-## Update behavior
+Do not rely on naive string splitting.
 
-Default update policy:
+## Database Requirement (MANDATORY)
 
-- do not regenerate slug automatically on every title or name change
-- preserve stable URLs unless the project explicitly wants slug regeneration
+A unique index must exist on the slug column, or on the scoped slug columns when uniqueness is scoped.
 
-If the model or project requires regeneration on update:
+Application-level checks alone are not sufficient.
 
-- only regenerate when the source attribute actually changed
-- exclude the current model from conflict checks
-- preserve manual slug overrides unless the project explicitly says otherwise
+Add database constraints that match the same uniqueness logic used by the application query.
 
-## Manual slug support
+## Concurrency Rule
 
-If a slug is already explicitly set by the developer, seeder, factory, admin panel, or request logic:
+Assume concurrent writes.
 
-- do not overwrite it automatically unless the project explicitly requires forced normalization
+Do not assume application-level uniqueness checks are sufficient.
 
-If the project already has an admin-facing editable slug field:
+If a unique constraint violation occurs during slug creation, the implementation should either:
 
-- preserve manual edits
-- only generate automatically when slug is empty
+- retry slug generation safely
+- or fail explicitly in a way the project can handle correctly
 
-## Database requirements
+Do not present slug generation as production-safe without database-backed collision protection.
 
-A database unique index on the slug column is required for production safety.
+## Slug Stability Rule
 
-Application logic alone is not enough because concurrent requests may compute the same next slug.
+Do not change a slug automatically on update by default.
 
-At minimum:
+Preserve stable URLs unless the project explicitly requires slug regeneration.
 
-- add a unique index for `slug`
+If a model opt-in requires regeneration on update:
 
-If the project has multi-tenant scoping, localization, or parent-child nesting, adapt uniqueness accordingly. Examples:
+- regenerate only when the source attribute actually changed
+- exclude the current model from collision checks
+- preserve manual slug overrides unless the project explicitly requires forced normalization
 
-- unique per site
-- unique per tenant
-- unique per locale
-- unique per parent category
+## Manual Slug Rule
 
-In those cases, scope both the application query and the database unique index consistently.
+If a slug is explicitly set by:
 
-## Multi-tenant and scoped slugging
+- a developer
+- a seeder
+- a factory
+- an admin panel
+- request handling logic
 
-If the model belongs to a tenant, site, team, locale, or parent entity, support scoped uniqueness.
+Do not overwrite it automatically.
 
-Examples:
+Generate a slug automatically only when the slug field is empty, unless the project explicitly requires forced normalization.
 
-- the same slug can exist in different tenants
-- the same slug can exist in different locales
-- the same slug can exist under different parent categories
+## Soft Delete Rule
 
-When scoped uniqueness is needed:
+If the model uses `SoftDeletes`, treat trashed rows as reserving their slug by default.
 
-- include the scope columns in the query
-- include the same scope in the unique database index
+Do not reuse the slug of a soft-deleted record unless the project explicitly chooses reuse.
+
+This reduces accidental URL collisions after restore.
+
+## Scoped Slugs
+
+If the model belongs to a scope such as:
+
+- tenant
+- site
+- locale
+- parent category
+- team
+
+Scope uniqueness consistently.
+
+When scoped uniqueness is required:
+
+- include the scope columns in the application query
+- include the same scope columns in the database unique index
 - document the chosen scope clearly in the implementation
 
-## Soft delete behavior
+Do not mix global uniqueness in code with scoped uniqueness in the database, or the reverse.
 
-Default behavior:
+## Routing Rule
 
-- if a model uses `SoftDeletes`, treat trashed rows as reserving their slug
-
-This avoids reusing old URLs and reduces accidental collisions after restore.
-
-If the project explicitly wants slug reuse after soft delete, make that a conscious override, not the default.
-
-## Route model binding
-
-If the model is public-facing and URLs should use slugs:
+If the model is public-facing and the project intends public URLs to use slugs:
 
 - implement `getRouteKeyName(): string`
-- return `slug`
+- return the slug column name
+- align the route model binding with the chosen slug strategy
 
-Only do this when it matches the project's routing conventions.
+Do not change route binding blindly if the project already uses a different established routing convention.
 
-## Testing requirements
-
-Add or update tests covering the important cases.
-
-Minimum required tests:
-
-1. generates base slug from title
-2. generates `-1` for the second duplicate
-3. generates the next suffix when multiple duplicates exist
-4. ignores non-numeric suffix variants when computing the sequence
-5. excludes the current record during update
-6. respects soft-deleted rows when configured to include them
-7. preserves the manual slug if already provided
-8. does not regenerate slug on update when regeneration is disabled
-9. regenerates slug on update when regeneration is enabled
-10. falls back safely when `Str::slug()` returns an empty string
-
-If scoped uniqueness exists, add tests for the scope as well.
-
-## Implementation quality rules
+## Implementation Quality Rules
 
 Do:
 
 - keep the logic reusable
-- keep the slug sequence parsing strict
+- keep suffix parsing strict
 - use expressive method names
-- keep controller, service, and request code free from duplicated slug logic
+- keep controller, service, request, and form code free from duplicated slug logic
 - use database constraints
 - align tests with actual model behavior
 
 Do not:
 
 - duplicate the same slug code in every model
-- rely on naive string splitting without strict suffix validation
-- silently change existing public slugs unless the project requires it
-- assume application-level checks alone prevent race conditions
-- hardcode team-specific naming into a general slug skill
+- rely on weak suffix parsing
+- silently change existing public slugs unless the project explicitly requires it
+- assume application-level checks prevent race conditions
+- introduce a conflicting slug system alongside an existing package or established convention
 
-## Recommended trait shape
+## Recommended Trait Shape
 
 Prefer a trait with methods conceptually similar to:
 
@@ -258,42 +267,74 @@ Prefer a trait with methods conceptually similar to:
 - `getSlugSourceColumnName()`
 - `shouldRegenerateSlugOnUpdate()`
 - `shouldIncludeTrashedInSlugCollisionCheck()`
+- `getSlugScopeColumns()`
 
-Method names can differ if the project already has naming conventions.
+Method names may differ if the project already has naming conventions.
 
-## Expected deliverables
+## Testing Requirements
 
-When implementing this skill in a Laravel project, usually produce:
+Add or update tests that cover:
+
+1. base slug generation from title
+2. `-1` generation for the second duplicate
+3. next suffix generation when multiple duplicates exist
+4. ignoring non-numeric suffix variants
+5. excluding the current record during update
+6. respecting soft-deleted rows when slug reservation is enabled
+7. preserving a manual slug when already provided
+8. not regenerating on update when regeneration is disabled
+9. regenerating on update when regeneration is enabled
+10. falling back safely when `Str::slug()` returns an empty string
+
+If uniqueness is scoped, add tests for the chosen scope.
+
+If route model binding changes, add or update tests for routing behavior.
+
+## Enforcement Rule
+
+If the existing slug logic is inconsistent, duplicated, or broken:
+
+- refactor it
+- do not preserve broken logic just because it already exists
+
+If the project already has a stronger established slug convention or an existing slug package, align with that system instead of creating a parallel implementation.
+
+## Agent Output Requirements
+
+The agent must:
+
+- inspect the current slug system before changing code
+- identify whether uniqueness is global or scoped
+- add or verify matching database constraints
+- preserve slug stability by default
+- preserve manual slugs unless explicitly told otherwise
+- handle soft deletes intentionally
+- implement or align route model binding when appropriate
+- add or update tests
+- summarize the exact implementation choices and assumptions
+
+## Expected Deliverables
+
+When applying this skill, usually produce:
 
 1. a reusable trait in a shared namespace
-2. any optional support class if needed
+2. an optional support class if needed
 3. model updates for one or more content models
-4. migration updates adding proper unique indexes
-5. tests covering slug generation behavior
+4. migration updates adding the proper unique index or scoped unique index
+5. tests covering slug behavior and edge cases
 6. route model binding updates where appropriate
 
-## Before changing code
+## Final Check
 
-Inspect the project for:
+Before finishing, confirm:
 
-- existing slug columns
-- existing route model binding behavior
-- packages already handling slugs
-- soft delete usage
-- tenant, site, locale, or parent scope requirements
-- admin forms that already expose editable slug fields
+- the slug logic is shared instead of duplicated
+- uniqueness is enforced both in code and in the database
+- update behavior preserves stable URLs by default
+- manual slugs are preserved
+- soft deletes are handled intentionally
+- scoped uniqueness, if needed, is implemented consistently
+- routing matches the chosen slug strategy
+- tests cover the important behaviors
 
-If the project already uses a slug package or established pattern, extend or align with it rather than introducing a conflicting parallel system.
-
-## Workflow
-
-When asked to implement this skill:
-
-1. Inspect the current project structure.
-2. Identify candidate models.
-3. Determine whether uniqueness is global or scoped.
-4. Implement the shared slugging system.
-5. Wire it into the target models.
-6. Add database constraints.
-7. Add or update tests.
-8. Summarize exactly what changed and any assumptions made.
+If any item fails, refactor.
