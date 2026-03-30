@@ -15,20 +15,21 @@ Activate this skill when:
 - managing `position` or `order` columns
 - enabling drag and drop ordering in Filament
 - refactoring inconsistent ordering logic
-- working with parent-child ordered data
+- working with parent-child or scope-based ordered data
 
 ## Before Implementing
 
 Inspect the project for:
 
 - the existing ordering column name
-- whether the model uses global or scoped ordering
+- whether the model uses global ordering or scoped ordering
+- whether an observer already exists
 - whether related models already use `position` or `order`
 - whether Filament tables already use `->reorderable(...)`
 - whether forms expose the ordering field
-- whether parent scope can change during updates
+- whether the scope key can change during updates
 
-Do not introduce a second ordering convention if the project already uses one consistently.
+Do not introduce conflicting ordering logic if the project already has a consistent ordering system.
 
 ## Core Rule
 
@@ -83,17 +84,19 @@ On update:
 
 On delete:
 
-- shift records below the deleted item up by one
+- shift records below the deleted item up by one by default
 
 ### Scoped Ordering
 
-Use scoped ordering when records are ordered only within a parent scope.
+Use scoped ordering when records are ordered only within a parent or scope group.
 
-Examples:
+Examples of scope keys:
 
 - `category_id`
 - `parent_id`
 - `sub_category_id`
+- `team_id`
+- `project_id`
 
 On create:
 
@@ -102,11 +105,22 @@ On create:
 On update:
 
 - reorder only within the active scope
-- if the parent scope changes, reposition the record inside the new scope
+- if the scope key changes, remove the record from the old scope ordering and reinsert it into the new scope ordering
 
 On delete:
 
-- shift only records within the same scope
+- shift only records within the same scope by default
+
+## Shift Logic Rule
+
+When moving a record from `old_position` to `new_position`:
+
+- if `new_position < old_position`, increment the ordering value of records between `new_position` and `old_position - 1`
+- if `new_position > old_position`, decrement the ordering value of records between `old_position + 1` and `new_position`
+
+Apply the same algorithm within the active scope for scoped ordering models.
+
+Do not leave the affected range ambiguous.
 
 ## Observer Rules
 
@@ -141,6 +155,14 @@ Replace `'order'` with the project's chosen ordering column.
 
 Use the original value when calculating how other rows must shift.
 
+## Concurrency Rule
+
+Assume concurrent writes.
+
+Do not assume `max(column) + 1` is safe by itself under concurrency.
+
+Use database constraints, transactions, or retry logic when the project requires stronger protection against duplicate ordering values.
+
 ## Safe Update Rule
 
 When updating other records inside an observer:
@@ -153,10 +175,20 @@ This is mandatory to prevent recursive observer loops.
 
 After delete:
 
-- shift remaining items up
-- remove ordering gaps
+- shift remaining items up and close gaps by default
 
-Do not leave broken sequences behind.
+If the project explicitly allows ordering gaps, align with that convention instead of forcing reindexing.
+
+## Parent or Scope Change Rule
+
+If the parent or scope key changes:
+
+- remove the record from the old scope ordering
+- close the gap in the old scope if the project uses strict ordering
+- insert the record into the new scope ordering at the correct position
+- shift affected records in the new scope as needed
+
+Do not treat scope changes like a simple in-place reorder.
 
 ## Filament Integration
 
@@ -200,7 +232,16 @@ Do not implement a separate custom ordering system in Filament that conflicts wi
 
 - the first record must receive `1`
 - manual override may be preserved only if the project explicitly allows it
-- if the parent scope changes, reposition the record correctly inside the new scope
+- if the parent or scope key changes, reposition the record correctly inside the new scope
+
+## Enforcement Rule
+
+If ordering logic is inconsistent, duplicated, or broken:
+
+- refactor it
+- do not preserve broken logic just because it already exists
+
+If the project already has a stronger established ordering convention, align with it instead of creating a parallel system.
 
 ## Anti-Patterns
 
@@ -211,7 +252,8 @@ Do not:
 - recalculate every row on every update
 - bypass observer logic
 - update related rows without `saveQuietly()`
-- ignore parent scope in scoped ordering models
+- hardcode a specific scope key such as `parent_id` in a generic pattern
+- ignore scope boundaries in scoped ordering models
 
 ## Agent Output Requirements
 
@@ -219,11 +261,12 @@ The agent must:
 
 1. detect the ordering column name
 2. detect whether ordering is global or scoped
-3. implement the correct observer pattern
-4. handle create, update, delete, and parent-scope-change behavior
-5. integrate the model with Filament forms and tables
-6. prevent recursive observer loops
-7. preserve a consistent ordering sequence
+3. detect the scope key when scoped ordering exists
+4. implement the correct observer pattern
+5. implement explicit shift logic for create, update, delete, and scope-change behavior
+6. integrate the model with Filament forms and tables
+7. prevent recursive observer loops
+8. preserve a consistent ordering sequence
 
 ## Final Rule
 
@@ -233,4 +276,5 @@ Ordering must be:
 - consistent
 - centralized in observers
 - safe from recursion
+- explicit in its shift logic
 - compatible with Filament reordering
