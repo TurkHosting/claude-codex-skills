@@ -12,8 +12,8 @@ skill-name/
   references/
 ```
 
-`SKILL.md` kisa giris dosyasidir.
-Uzun standartlar, ornekler ve edge-case notlari `references/` altina bolunur.
+`SKILL.md` kisa ama yeterli giris dosyasidir.
+Uzun standartlar, ornekler ve edge-case notlari ayni skill'in `references/` klasoru altinda tutulur.
 
 ## Skilller
 

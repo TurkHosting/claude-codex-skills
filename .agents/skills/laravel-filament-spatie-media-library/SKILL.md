@@ -31,4 +31,4 @@ Use this skill when:
 - `references/conversions.md`
 - `references/filament-integration.md`
 - `references/seeder-and-api.md`
-- `../../../docs/spatie-media-library-standard.md`
+- `references/implementation-standard.md`
