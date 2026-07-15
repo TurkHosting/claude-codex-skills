@@ -12,7 +12,8 @@ This reference defines the stricter implementation details for Spatie Media Libr
   - `optimized`
   - `web`
 - Use `Fit::Crop` for conversions.
-- Use `nonQueued()` by default.
+- Use queued conversions by default (do not call `nonQueued()`). Queue is configured via `config/media-library.php`.
+- **Exception — Seeders:** In seeders, temporarily disable queued conversions so demo images are generated synchronously without a queue worker.
 - Use public visibility for uploads.
 - Accept JPEG and PNG by default.
 - Define dimensions as model constants and reuse them everywhere.
@@ -53,13 +54,11 @@ class Slider extends Model implements HasMedia
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('optimized')
-            ->fit(Fit::Crop, self::IMAGE_WIDTH, self::IMAGE_HEIGHT)
-            ->nonQueued();
+            ->fit(Fit::Crop, self::IMAGE_WIDTH, self::IMAGE_HEIGHT);
 
         $this->addMediaConversion('web')
             ->fit(Fit::Crop, self::IMAGE_WIDTH, self::IMAGE_HEIGHT)
-            ->format('webp')
-            ->nonQueued();
+            ->format('webp');
     }
 }
 ```
