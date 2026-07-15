@@ -77,11 +77,13 @@ SpatieMediaLibraryFileUpload::make('images')
 'image_min_dimensions_hint' => 'Upload an image at least :widthx:height px — smaller images are rejected.',
 ```
 
-## Canonical examples in this codebase
+## Find a canonical example in your project
 
-Mirror these when building new forms/tables:
+Before building a new form/table, mirror a sibling in the same project that already follows this standard. Search `app/Filament/**/Schemas/*Form.php` and `app/Filament/**/Tables/*Table.php` for the closest match to:
 
-- **Form with section descriptions + per-field hints:** `app/Filament/Resources/Currencies/Schemas/CurrencyForm.php`
-- **Parameterized image hint + collapsible SEO section:** `app/Filament/Resources/Products/Schemas/ProductForm.php`
-- **`hintIcon` tooltip variant:** `app/Filament/Resources/Users/Schemas/UserForm.php`
-- **Table description + empty state:** `app/Filament/Resources/Currencies/Tables/CurrenciesTable.php`
+- a **Form** with Section descriptions + per-field hints,
+- a **Form** with a parameterized image hint + a collapsible SEO section,
+- a form field using the `hintIcon` tooltip variant,
+- a **Table** with a description + empty-state heading/description,
+
+and follow its shape and imports rather than writing from scratch.

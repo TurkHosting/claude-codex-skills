@@ -1,6 +1,6 @@
 ---
 name: filament-form-table-descriptions
-description: Enforce consistent contextual copy (helperText, Section description, table description, empty states) across every Filament form and table in the admin panel, fully translated across the 6 locales. Use when creating, refactoring, or reviewing any Filament Resource, Page, or Relation Manager form schema or table.
+description: Enforce consistent contextual copy (helperText, Section description, table description, empty states) across every Filament form and table in the admin panel. Route copy through the project's translation layer; in multi-language projects keep every configured locale in parity. Use when creating, refactoring, or reviewing any Filament Resource, Page, or Relation Manager form schema or table.
 ---
 
 # Filament Form & Table Descriptions
@@ -41,7 +41,7 @@ These are mandatory. Do not skip any.
    - **Section `->description()`** — required on every `Section` grouping more than a couple of fields; sets context for the whole group.
    - **Table `->description()` + `->emptyStateHeading()` + `->emptyStateDescription()`** — required on every resource table; an empty table is never bare.
 
-4. **All copy is translated, never hardcoded.** Every label/helperText/description resolves through `__('admin.{key}')` and every new key exists in all 6 locales (`tr`, `en`, `ar`, `fr`, `es`, `ru`), English value written first. Naming conventions and the lang-file mechanics live in [references/translation-keys.md](references/translation-keys.md).
+4. **Never hardcode copy — route it through the project's translation layer.** Every label/helperText/description resolves through a translation call (e.g. `__('admin.{key}')`) rather than an inline literal. In a **multi-language project**, add each new key to every configured locale in the same change, with the fallback-locale value written first. In a **single-language project**, still centralize the copy in the translation layer, but there is no multi-locale parity requirement. Key-naming conventions and lang-file mechanics live in [references/translation-keys.md](references/translation-keys.md).
 
 5. **Verify Filament syntax & imports before writing.** Form and table layers use different namespaces and methods; confirm via laravel-boost `search-docs` and mirror a sibling file's imports. Details in [references/filament-syntax.md](references/filament-syntax.md).
 
@@ -64,7 +64,7 @@ Before finishing, confirm:
 - the table has a `description` + empty-state heading/description
 - each copy answers what it is, why it matters, and what to do — never just restates the label
 - a non-technical admin could act on the copy without asking a developer
-- every new key exists in all 6 locales, English value written first
+- copy is centralized in the translation layer, not hardcoded; in a multi-language project every new key exists in all configured locales, fallback value written first
 
 If any item fails, fix it before finishing. If you find an existing form/table nearby that lacks descriptions, surface the gap to the user rather than silently leaving it bare.
 

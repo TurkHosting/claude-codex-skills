@@ -1,6 +1,6 @@
 # Implementation Standard
 
-This reference defines the stricter implementation details for Spatie Media Library usage in Laravel and Filament projects.
+This reference defines the stricter consistency conventions layered **on top of** the package basics (which `medialibrary-development` covers) for Spatie Media Library usage in Laravel and Filament projects.
 
 ## Core Architecture
 
@@ -12,8 +12,8 @@ This reference defines the stricter implementation details for Spatie Media Libr
   - `optimized`
   - `web`
 - Use `Fit::Crop` for conversions.
-- Use queued conversions by default (do not call `nonQueued()`). Queue is configured via `config/media-library.php`.
-- **Exception — Seeders:** In seeders, temporarily disable queued conversions so demo images are generated synchronously without a queue worker.
+- **Queueing is a per-project decision:** prefer queued conversions when the project runs a queue worker (do not add `nonQueued()`); use `->nonQueued()` (or `queue_conversions_by_default => false`) when it does not. Match the project's actual queue setup.
+- **Seeders (any project):** generate demo images synchronously — no worker runs during seeding — via `->nonQueued()` or a config override in seeder scope.
 - Use public visibility for uploads.
 - Accept JPEG and PNG by default.
 - Define dimensions as model constants and reuse them everywhere.
@@ -32,6 +32,8 @@ Reference those constants from:
 Do not duplicate image dimensions across forms, resources, and helpers.
 
 ## Single Collection Example
+
+The `HasMedia` / `InteractsWithMedia` / `registerMediaCollections` scaffolding is standard package setup (see `medialibrary-development`); what this example demonstrates is the **conversion convention** — two conversions, shared model constants, `Fit::Crop`, and `webp` only on `web`:
 
 ```php
 use Spatie\MediaLibrary\HasMedia;

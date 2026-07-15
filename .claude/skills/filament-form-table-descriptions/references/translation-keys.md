@@ -1,6 +1,6 @@
 # Translation Keys
 
-All form/table copy is translated through `__('admin.{key}')` — never hardcoded. Keys live in `lang/{locale}/admin.php` and must exist in all 6 locales.
+All form/table copy is translated through a translation call such as `__('admin.{key}')` — never hardcoded. Keys live in a translation namespace such as `lang/{locale}/admin.php`. In a multi-language project the key must exist in every configured locale; in a single-language project the same key simply lives in that one locale.
 
 ## Key naming conventions
 
@@ -35,14 +35,16 @@ admin.meta_description_hint
 'customer_email_hint' => 'The customer signs in with this address and receives order emails here.',
 ```
 
-## 6-locale parity (non-negotiable)
+## Locale parity (multi-language projects only)
 
-- The six locales are `tr`, `en`, `ar`, `fr`, `es`, `ru`. Fallback is `en`.
-- Whenever you add, rename, or edit a key, apply the same change to **all six** `lang/{locale}/admin.php` files in the same task.
-- **Write the English value first**, then translate into the other five. Fallback is a safety net, not a translation strategy.
-- Proper nouns (brand/product/theme names, third-party services) stay identical across all six — only translate the descriptive words around them.
+Applies only when the project ships more than one locale. Single-language projects keep the key in their one locale and can skip the parity rules below.
+
+- Determine the project's **configured locales and its fallback from its own config** — do not assume a fixed set.
+- Whenever you add, rename, or edit a key, apply the same change to **every** configured locale file in the same task.
+- **Write the fallback-locale value first**, then translate into the rest. Fallback is a safety net, not a translation strategy.
+- Proper nouns (brand/product/theme names, third-party services) stay identical across locales — only translate the descriptive words around them.
 - If you notice a pre-existing key that is missing in some locales, surface the gap to the user.
 
 ## Quick parity self-check
 
-After adding keys, confirm each new key is present in every locale file before finishing. A key present in only some locales is a bug, not "covered by fallback."
+In a multi-language project, after adding keys confirm each new key is present in every configured locale file before finishing. A key present in only some locales is a bug, not "covered by fallback."
