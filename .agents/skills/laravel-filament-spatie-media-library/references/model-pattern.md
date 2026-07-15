@@ -1,11 +1,11 @@
 # Model Pattern
 
+> Package mechanics — implementing `HasMedia` / `InteractsWithMedia` and registering collections/conversions — belong to `medialibrary-development`. This file adds only the consistency conventions layered on top.
+
 ## Rules
 
-- Implement `HasMedia` and use `InteractsWithMedia`.
-- Register each media collection explicitly.
 - Use `->singleFile()` by default unless the collection is intentionally multi-file.
-- Keep image dimensions in model constants only.
+- Keep image dimensions in model constants only (see Preferred Constant Names below).
 
 ## Preferred Constant Names
 

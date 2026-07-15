@@ -7,6 +7,15 @@ description: Enforce a consistent Spatie Media Library implementation across Lar
 
 Apply this skill when a Laravel or Filament project needs a consistent media architecture built on Spatie Media Library.
 
+## Relationship to `medialibrary-development`
+
+This skill is a **layer on top of the Spatie package's own mechanics — it does not repeat them.** When `spatie/laravel-medialibrary` is a project dependency, Laravel Boost automatically loads the package author's `medialibrary-development` skill, which owns the fundamentals: implementing `HasMedia` / `InteractsWithMedia`, adding and retrieving media, defining collections and conversions, responsive images, and URL/path generation. Defer to it for any package-API question.
+
+What this skill adds on top:
+
+- **Filament integration** — upload fields and image columns (`medialibrary-development` covers none of this).
+- **Cross-project consistency conventions** — conversion naming, dimension single-source-of-truth, API resource keys, and seeder rules.
+
 ## Activation
 
 Use this skill when:
