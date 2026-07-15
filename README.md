@@ -18,6 +18,7 @@ Uzun standartlar, ornekler ve edge-case notlari ayni skill'in `references/` klas
 ## Skilller
 
 - `filament-form-layout`
+- `filament-form-table-descriptions`
 - `laravel-filament-spatie-media-library`
 - `laravel-order-observer-standard`
 - `laravel-unique-slug`
