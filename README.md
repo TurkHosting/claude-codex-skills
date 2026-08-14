@@ -28,7 +28,7 @@ Uzun standartlar, örnekler ve edge-case notları aynı skill'in `references/` k
 
 `wait-what` skill'i [Matt Pocock](https://github.com/mattpocock)'un
 [mattpocock/skills](https://github.com/mattpocock/skills/tree/main/skills/productivity/wait-what)
-reposundaki orijinal skill'inden ilham alınarak Türkçe'ye uyarlanmıştır.
-Orijinaldeki ASD-STE100 Simplified Technical English kuralı, aynı prensipler
-korunarak sade teknik Türkçe karşılığıyla değiştirilmiştir.
+reposundaki orijinal skill'i temel alır. Orijinal İngilizce talimatlar ve
+ASD-STE100 Simplified Technical English kuralı korunmuş, yalnızca yanıtın
+Türkçe verilmesi şartı eklenmiştir.
 Fikir ve özgün tasarım kendisine aittir.
