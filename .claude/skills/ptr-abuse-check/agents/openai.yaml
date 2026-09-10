@@ -1,0 +1,7 @@
+interface:
+  display_name: "PTR Abuse Check"
+  short_description: "PTR taleplerini kötüye kullanım açısından incele"
+  default_prompt: "Use $ptr-abuse-check to analyze the supplied PTR request for abuse signals."
+
+policy:
+  allow_implicit_invocation: false
