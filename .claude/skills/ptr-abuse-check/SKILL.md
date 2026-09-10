@@ -198,3 +198,9 @@ Turkish.
 If the operator wants the technical-proof variant instead (asking the customer to
 create an A record rather than to produce written authorization), use the
 "Proof of control" template in the same file.
+
+## References
+
+- `watchlist.md` — brands, abuse lexicon, TLDs, structural signals
+- `response-templates.md` — customer reply templates (EN/TR)
+- `references/porting.md` — running the skill under other agents; behavioural contract
