@@ -1,0 +1,10 @@
+# Codex CLI için skill arayüzü. Claude Code bu dosyayı okumaz.
+# allow_implicit_invocation: false -> Codex skill'i kendiliğinden seçmez;
+# yalnızca kullanıcı açıkça çağırınca çalışır.
+# (SKILL.md'deki disable-model-invocation: true karşılığı.)
+interface:
+  display_name: "Wait, what?"
+  short_description: "Son mesajı sadeleştirerek yeniden anlat"
+
+policy:
+  allow_implicit_invocation: false
